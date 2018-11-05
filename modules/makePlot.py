@@ -32,7 +32,7 @@ def main(
     fig.autofmt_xdate()
 
     ax2 = plt.subplot(gs[0:2, 2:4])
-    ax2.set_title("N_T={}, rad={:.2f} [deg]".format(
+    ax2.set_title(r"$N_{{T}}={},\, rad={:.2f}\,[deg]$".format(
         ra.size, rad), fontsize=8)
     plt.xlabel("RA [deg]")
     plt.ylabel("DEC [deg]")
@@ -40,7 +40,11 @@ def main(
     # Radius
     circle = plt.Circle(center, rad, color='red', lw=1.5, fill=False)
     fig.gca().add_artist(circle)
+    plt.xlim(max(min(ra), center[0] - 3. * rad),
+             min(max(ra), center[0] + 3. * rad))
     ax2.invert_xaxis()
+    plt.ylim(max(min(dec), center[1] - 3. * rad),
+             min(max(dec), center[1] + 3. * rad))
 
     ax4 = plt.subplot(gs[0:2, 4:6])
     ax4.scatter(mag, e_col1, label='e' + col1_n, s=5, lw=0., alpha=0.5)

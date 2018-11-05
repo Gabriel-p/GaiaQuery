@@ -20,9 +20,6 @@ def main(cat, name, center, box_s, read):
         result = v.query_region(coord.SkyCoord(
             ra=center[0], dec=center[1], unit=(u.deg, u.deg), frame='icrs'),
             width=box_s, catalog=[cat])
-
-        # Write in 'input/' folder
-        ascii.write(result[cat], 'input/' + name + ".dat", overwrite=True)
-        data = ascii.read('input/' + name + ".dat")
+        data = result[cat]
 
     return data

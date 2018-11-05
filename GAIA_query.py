@@ -2,14 +2,16 @@
 import numpy as np
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
-from modules import makePlot, getData
+from modules import getData, writeOut, makePlot
 
 # GaiaDR2 = 'I/345/gaia2'
 # Hardcoded to work on Gaia DR2 data.
 cat = 'I/345/gaia2'
 
 
-def main(clusters, read=True, babusiaux_filters=False):
+def main(
+    clusters, col1_n='BP-RP', col2_n='BP-G', read=True,
+        babusiaux_filters=False):
     """
     Explore data downloaded via the astroquery package.
 
@@ -38,10 +40,13 @@ def main(clusters, read=True, babusiaux_filters=False):
                 100. - (len(data) * 100.) / N_old))
 
         print("Obtaining magnitudes/colors and their uncertainties")
-        # Select colors
-        col1_n, col2_n = 'BP-RP', 'BP-G'
         mag, e_mag, col1, e_col1, col2, e_col2 = uncertMags(
             data, col1_n, col2_n)
+
+        print("Write output file in input/ folder")
+        writeOut.main(
+            clust['name'], data, mag, e_mag, col1, e_col1, col2, e_col2,
+            col1_n, col2_n)
 
         print("Plotting")
         makePlot.main(
@@ -121,27 +126,30 @@ if __name__ == '__main__':
     # print(catalogs)
 
     clusters = [
+        {'name': 'TEST', 'center': (95.05864, -73.41445), 'box_s': ".1deg",
+         'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+         'plx_min': .0, 'plx_max': 5.},
         # {'name': 'GAIA1', 'center': (101.47, -16.75), 'box_s': "1deg",
         #  'clust_rad': .15, 'e_mmax': 0.05, 'e_c1max': .1, 'e_c2max': 0.1,
         #  'plx_min': 0., 'plx_max': 5.},
         # {'name': 'GAIA2', 'center': (28.12, 53.04), 'box_s': "1deg",
         #  'clust_rad': .07, 'e_mmax': 0.1, 'e_c1max': .2, 'e_c2max': 0.2,
         #  'plx_min': .0, 'plx_max': 5.},
-        {'name': 'GAIA3', 'center': (95.05864, -73.41445), 'box_s': "1deg",
-         'clust_rad': .027, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.},
-        {'name': 'GAIA4', 'center': (56.36793, 52.89297), 'box_s': "1deg",
-         'clust_rad': .059, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.},
-        {'name': 'GAIA5', 'center': (110.79779, -29.71947), 'box_s': "1deg",
-         'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.},
-        {'name': 'GAIA6', 'center': (122.09798, -23.70648), 'box_s': "1deg",
-         'clust_rad': .06, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.},
-        {'name': 'GAIA7', 'center': (84.69075, 30.49822), 'box_s': "1deg",
-         'clust_rad': .035, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.}
+        # {'name': 'GAIA3', 'center': (95.05864, -73.41445), 'box_s': "1deg",
+        #  'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+        #  'plx_min': .0, 'plx_max': 5.},
+        # {'name': 'GAIA4', 'center': (56.36793, 52.89297), 'box_s': "1deg",
+        #  'clust_rad': .059, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+        #  'plx_min': .0, 'plx_max': 5.},
+        # {'name': 'GAIA5', 'center': (110.79779, -29.71947), 'box_s': "1deg",
+        #  'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+        #  'plx_min': .0, 'plx_max': 5.},
+        # {'name': 'GAIA6', 'center': (122.09798, -23.70648), 'box_s': "1deg",
+        #  'clust_rad': .06, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+        #  'plx_min': .0, 'plx_max': 5.},
+        # {'name': 'GAIA7', 'center': (84.69075, 30.49822), 'box_s': "1deg",
+        #  'clust_rad': .035, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
+        #  'plx_min': .0, 'plx_max': 5.}
     ]
 
-    main(clusters, read=True)
+    main(clusters, read=False)
