@@ -1,5 +1,8 @@
 
+import ast
 import numpy as np
+from astropy.io import ascii
+from astropy.table import Table
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
 from modules import getData, writeOut, makePlot
@@ -9,9 +12,7 @@ from modules import getData, writeOut, makePlot
 cat = 'I/345/gaia2'
 
 
-def main(
-    clusters, col1_n='BP-RP', col2_n='BP-G', read=True,
-        babusiaux_filters=False):
+def main():
     """
     Explore data downloaded via the astroquery package.
 
@@ -26,10 +27,13 @@ def main(
     http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=II/349&-to=3
 
     """
-    for clust in clusters:
+    params, clusters = readInput()
+    read, col1_n, col2_n, babusiaux_filters = params
 
-        data = getData.main(
-            cat, clust['name'], clust['center'], clust['box_s'], read)
+    for clust in clusters:
+        center = (clust['cent_ra'], clust['cent_dec'])
+
+        data = getData.main(cat, clust['name'], center, clust['box_s'], read)
 
         N_old = len(data)
         print("{} data read, {} sources".format(clust['name'], N_old))
@@ -50,7 +54,7 @@ def main(
 
         print("Plotting")
         makePlot.main(
-            clust['name'], clust['center'], clust['clust_rad'],
+            clust['name'], center, clust['clust_rad'],
             clust['e_mmax'], clust['e_c1max'], clust['e_c2max'],
             clust['plx_min'], clust['plx_max'],
             data['RA_ICRS'], data['DE_ICRS'],
@@ -119,37 +123,34 @@ def uncertMags(data, col1_n, col2_n):
         unp.nominal_values(col2), unp.std_devs(col2),
 
 
+def readInput():
+    """
+    Read 'cluster_in.dat' data file.
+    """
+    with open("clusters_in.dat", 'r') as f:
+        i = 0
+        for line in f:
+            if i != 1:
+                if not line.startswith('#') and line != '\n':
+                    params = line.split()
+                    i = 1
+            else:
+                data = ascii.read(f.read())
+
+    params = (ast.literal_eval(params[0]), params[1], params[2],
+              ast.literal_eval(params[3]))
+
+    clusters = Table(data, names=(
+        'name', 'cent_ra', 'cent_dec', 'box_s', 'clust_rad', 'e_mmax',
+        'e_c1max', 'e_c2max', 'plx_min', 'plx_max'))
+
+    return params, clusters
+
+
 if __name__ == '__main__':
     # To see available catalogs:
     # catalog_list = Vizier.find_catalogs('Pan-STARRS')
     # catalogs = Vizier.get_catalogs(catalog_list.keys())
     # print(catalogs)
 
-    clusters = [
-        {'name': 'TEST', 'center': (95.05864, -73.41445), 'box_s': ".1deg",
-         'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-         'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA1', 'center': (101.47, -16.75), 'box_s': "1deg",
-        #  'clust_rad': .15, 'e_mmax': 0.05, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': 0., 'plx_max': 5.},
-        # {'name': 'GAIA2', 'center': (28.12, 53.04), 'box_s': "1deg",
-        #  'clust_rad': .07, 'e_mmax': 0.1, 'e_c1max': .2, 'e_c2max': 0.2,
-        #  'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA3', 'center': (95.05864, -73.41445), 'box_s': "1deg",
-        #  'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA4', 'center': (56.36793, 52.89297), 'box_s': "1deg",
-        #  'clust_rad': .059, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA5', 'center': (110.79779, -29.71947), 'box_s': "1deg",
-        #  'clust_rad': .05, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA6', 'center': (122.09798, -23.70648), 'box_s': "1deg",
-        #  'clust_rad': .06, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': .0, 'plx_max': 5.},
-        # {'name': 'GAIA7', 'center': (84.69075, 30.49822), 'box_s': "1deg",
-        #  'clust_rad': .035, 'e_mmax': 0.1, 'e_c1max': .1, 'e_c2max': 0.1,
-        #  'plx_min': .0, 'plx_max': 5.}
-    ]
-
-    main(clusters, read=False)
+    main()

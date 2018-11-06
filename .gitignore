@@ -105,3 +105,4 @@ venv.bak/
 
 input/*
 output/*
+clusters_in.dat

@@ -1,0 +1,10 @@
+
+# Global parameters for the code.
+#
+# read   col1_n    col2_n     babusiaux_filters
+True      BP-RP      BP-G                 False
+
+# One cluster per line.
+#
+# name   cent_ra  cent_dec  box_s cl_rad e_mmax ec1max ec2max plx_min plx_max
+CLUSTER1    34.5     -66.8   1deg     .2     .2     .2     2.      0.      5.
