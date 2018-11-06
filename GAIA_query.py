@@ -1,4 +1,5 @@
 
+import os
 import ast
 import numpy as np
 from astropy.io import ascii
@@ -29,6 +30,10 @@ def main():
     """
     params, clusters = readInput()
     read, col1_n, col2_n, babusiaux_filters = params
+
+    for folders in ['input', 'output']:
+        if not os.path.exists(folders):
+            os.makedirs(folders)
 
     for clust in clusters:
         center = (clust['cent_ra'], clust['cent_dec'])
