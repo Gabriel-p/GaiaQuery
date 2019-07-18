@@ -6,6 +6,7 @@ import matplotlib.cm as cm
 from matplotlib.colors import Normalize
 import matplotlib.offsetbox as offsetbox
 import matplotlib.gridspec as gridspec
+import warnings
 
 
 def main(
@@ -32,19 +33,22 @@ def main(
     fig.autofmt_xdate()
 
     ax2 = plt.subplot(gs[0:2, 2:4])
-    ax2.set_title(r"$N_{{T}}={},\, rad={:.2f}\,[deg]$".format(
+    ax2.set_title(r"$N_{{T}}={},\, rad={:.3f}\,[deg]$".format(
         ra.size, rad), fontsize=8)
     plt.xlabel("RA [deg]")
     plt.ylabel("DEC [deg]")
-    ax2.scatter(ra, dec, s=star_size(mag), c='k')
+    ra_min = max(min(ra), center[0] - 3. * rad)
+    ra_max = min(max(ra), center[0] + 3. * rad)
+    de_min = max(min(dec), center[1] - 3. * rad)
+    de_max = min(max(dec), center[1] + 3. * rad)
+    msk = (ra > ra_min) & (ra < ra_max) & (dec > de_min) & (dec < de_max)
+    ax2.scatter(ra[msk], dec[msk], s=star_size(mag[msk]), c='k')
     # Radius
     circle = plt.Circle(center, rad, color='red', lw=1.5, fill=False)
     fig.gca().add_artist(circle)
-    plt.xlim(max(min(ra), center[0] - 3. * rad),
-             min(max(ra), center[0] + 3. * rad))
+    plt.xlim(ra_min, ra_max)
+    plt.ylim(de_min, de_max)
     ax2.invert_xaxis()
-    plt.ylim(max(min(dec), center[1] - 3. * rad),
-             min(max(dec), center[1] + 3. * rad))
 
     ax4 = plt.subplot(gs[0:2, 4:6])
     ax4.scatter(mag, e_col1, label='e' + col1_n, s=5, lw=0., alpha=0.5)
@@ -155,7 +159,10 @@ def main(
     cbar = fig.colorbar(im, cax=cbar_ax)
     cbar.ax.tick_params(labelsize=5)
 
-    fig.tight_layout()
+    # Ignore warning issued by colorbar.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        fig.tight_layout()
 
     if babusiaux_filters:
         out_name = 'output/gaia_babusiaux_' + name + '.png'

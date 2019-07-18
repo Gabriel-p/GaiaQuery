@@ -10,10 +10,10 @@ def main(cat, name, center, box_s, read):
     Download data using astroquery.
     """
     if read:
-        print("Reading {} data file.".format(name))
+        print("\nReading {} data file.".format(name))
         data = ascii.read('input/' + name + '.dat')
     else:
-        print("Downloading data for {}, from {}.".format(name, cat))
+        print("\nDownloading data for {}, from {}.".format(name, cat))
         # Unlimited rows, all columns
         v = Vizier(row_limit=-1, columns=['all'])
 
