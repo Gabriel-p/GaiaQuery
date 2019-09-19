@@ -1,11 +1,11 @@
 # GaiaQuery
 
 Simple script to query Gaia DR2 data using the
-[`astroquery`](https://astroquery.readthedocs.io) package.
-
-Generates two user-defined colors (not present in the raw Gaia data) with their associated uncertainties.
+[`astroquery`](https://astroquery.readthedocs.io) package. Generates two user-defined colors (not present in the raw Gaia data) with their associated uncertainties.
 
 Can be made to apply the [Babusiaux et al. (2018)](https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..10G/abstract) quality filters.
+
+Latest release can be obtained [here](https://github.com/Gabriel-p/GaiaQuery/releases).
 
 ### Requirements
 
