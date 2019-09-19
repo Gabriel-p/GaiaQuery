@@ -1,10 +1,49 @@
 
 # Global parameters for the code.
 #
-# read   col1_n    col2_n     babusiaux_filters
-True      BP-RP      BP-G                 False
+# read : True / False
+#   If True, read (instead of downloading) a properly formatted
+#   data file from an 'input/' sub-folder.
+#
+# col1, col2 : strings
+#   Names of the colors to create, combining the G, BP, RP filters
+#
+# babusiaux_filters : True / False
+#   Apply (or not) Babusiaux et al. (2018A&A...616A..10G) filters
+#   to the queried data.
+#
+# read     col1      col2     babusiaux_filters
+False     BP-RP      BP-G                 False
 
-# One cluster per line.
+
+
+# One cluster per line, for all the clusters that are queried.
+#
+# name : string
+#   Name that will be assigned to the cluster. Does not affect the queried
+#   data.
+#
+# cent_ra, dent_dec : floats
+#   (RA, DEC) center coordinates in degrees
+#
+# box_s : float
+#   Length of the square box around the queried center. Must be in a format
+#   supported by astropy's 'Angle' class[1].
+#
+# cl_rad : float
+#   Approximate radius of the queried cluster. Only affects the plot, not
+#   the queried data.
+#
+# e_mmax ec1max ec2max plx_min plx_max : floats
+#   Maximum uncertanties values for the G magnitude and the two defined
+#   colors, and minimum & maximum values for the parallax. Only affects
+#   the plot, not the queried data.
+# 
 #
 # name   cent_ra  cent_dec  box_s cl_rad e_mmax ec1max ec2max plx_min plx_max
-CLUSTER1    34.5     -66.8   1deg     .2     .2     .2     2.      0.      5.
+NGC659      26.1    60.673  .5deg     .1     .2     .2     2.      0.      5.
+
+
+
+# ---------------------------------------------------------------------------
+# [1]: (http://docs.astropy.org/en/stable/api/astropy.coordinates.Angle.html#astropy.coordinates.Angle)
