@@ -7,6 +7,7 @@ from astropy.table import Table
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
 from modules import getData, writeOut, makePlot
+from modules._version import __version__
 
 # GaiaDR2 = 'I/345/gaia2'
 # Hardcoded to work on Gaia DR2 data.
@@ -28,6 +29,10 @@ def main():
     http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=II/349&-to=3
 
     """
+    print("\n*******************")
+    print(" GaiaQuery {}".format(__version__))
+    print("*******************")
+
     params, clusters = readInput()
     read, col1_n, col2_n, babusiaux_filters = params
 
