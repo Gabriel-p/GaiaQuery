@@ -53,14 +53,19 @@ def main():
             print("Filters applied, {:.1f}% of data lost".format(
                 100. - (len(data) * 100.) / N_old))
 
-        print("Obtaining magnitudes/colors and their uncertainties")
-        mag, e_mag, col1, e_col1, col2, e_col2 = uncertMags(
-            data, col1_n, col2_n)
+        if read is False:
+            print("Obtaining magnitudes/colors and their uncertainties")
+            mag, e_mag, col1, e_col1, col2, e_col2 = uncertMags(
+                data, col1_n, col2_n)
 
-        print("Write output file in input/ folder")
-        writeOut.main(
-            clust['name'], data, mag, e_mag, col1, e_col1, col2, e_col2,
-            col1_n, col2_n)
+            print("Write output file in input/ folder")
+            writeOut.main(
+                clust['name'], data, mag, e_mag, col1, e_col1, col2, e_col2,
+                col1_n, col2_n)
+        else:
+            mag, e_mag, col1, e_col1, col2, e_col2 = data['Gmag'],\
+                data['e_Gmag'], data[col1_n], data['e_' + col1_n],\
+                data[col2_n], data['e_' + col2_n]
 
         print("Plotting")
         makePlot.main(
@@ -71,7 +76,9 @@ def main():
             mag, e_mag, col1, e_col1, col2, e_col2,
             data['Plx'], data['pmRA'], data['e_pmRA'], data['pmDE'],
             data['e_pmDE'], data['RV'], col1_n, col2_n,
-            babusiaux_filters)
+            babusiaux_filters, clust['box_s'])
+
+    print("\nEnd")
 
 
 def babusiaux_filt(data):
