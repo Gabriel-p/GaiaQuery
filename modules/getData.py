@@ -19,7 +19,7 @@ def main(cat, name, center, box_s, read):
 
         result = v.query_region(coord.SkyCoord(
             ra=center[0], dec=center[1], unit=(u.deg, u.deg), frame='icrs'),
-            width=box_s, catalog=[cat])
+            width=box_s, catalog=[cat]) # TODO add in params input file: column_filters={'Gmag': '<19'})
         data = result[cat]
 
     return data
