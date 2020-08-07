@@ -9,7 +9,7 @@ Latest release can be obtained [here](https://github.com/Gabriel-p/GaiaQuery/rel
 
 ### Requirements
 
-    Python 3.7, numpy, astropy, matplotlib, scipy, astroquery, uncertainties
+    Python 3.8, numpy, astropy, matplotlib, scipy, astroquery, uncertainties
 
 Can be run in a `conda` environment with:
 
