@@ -5,7 +5,7 @@ import astropy.units as u
 from astroquery.vizier import Vizier
 
 
-def main(cat, name, center, box_s, read):
+def main(cat, Gmax, name, center, box_s, read):
     """
     Download data using astroquery.
     """
@@ -19,7 +19,8 @@ def main(cat, name, center, box_s, read):
 
         result = v.query_region(coord.SkyCoord(
             ra=center[0], dec=center[1], unit=(u.deg, u.deg), frame='icrs'),
-            width=box_s, catalog=[cat]) # TODO add in params input file: column_filters={'Gmag': '<19'})
+            width=box_s, catalog=[cat],
+            column_filters={'Gmag': '<{}'.format(Gmax)})
         data = result[cat]
 
     return data

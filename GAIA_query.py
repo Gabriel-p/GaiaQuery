@@ -9,10 +9,6 @@ from uncertainties import unumpy as unp
 from modules import getData, writeOut, makePlot
 from modules._version import __version__
 
-# GaiaDR2 = 'I/345/gaia2'
-# Hardcoded to work on Gaia DR2 data.
-cat = 'I/345/gaia2'
-
 
 def main():
     """
@@ -25,25 +21,36 @@ def main():
     https://astronomy.stackexchange.com/q/26250/354
     https://astronomy.stackexchange.com/q/26071/354
 
-    Vizier Pan-STARRS1 column names:
-    http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=II/349&-to=3
-
     """
     print("\n*******************")
     print(" GaiaQuery {}".format(__version__))
     print("*******************")
 
-    params, clusters = readInput()
-    read, col1_n, col2_n, babusiaux_filters = params
+    read, DR, Gmax, babusiaux_filters, clusters = readInput()
+
+    if DR == '2':
+        # Gaia DR2
+        cat = 'I/345/gaia2'
+        rv_col = 'RV'
+    elif DR == '3':
+        # Gaia EDR3
+        cat = 'I/350/gaiaedr3'
+        rv_col = 'RVDR2'
+    else:
+        raise ValueError("DR value '{}' is not supported".format(DR))
+
+    # Define color names
+    col1_n, col2_n, col3_n = 'BP-RP', 'BP-G', 'G-RP'
 
     for folders in ['input', 'output']:
         if not os.path.exists(folders):
             os.makedirs(folders)
 
     for clust in clusters:
-        center = (clust['cent_ra'], clust['cent_dec'])
+        center, box_s = (clust['cent_ra'], clust['cent_dec']), clust['box_s']
 
-        data = getData.main(cat, clust['name'], center, clust['box_s'], read)
+        data = getData.main(
+            cat, Gmax, clust['name'], center, box_s, read)
 
         N_old = len(data)
         print("{} data read, {} sources".format(clust['name'], N_old))
@@ -53,30 +60,27 @@ def main():
             print("Filters applied, {:.1f}% of data lost".format(
                 100. - (len(data) * 100.) / N_old))
 
+        mag, e_mag = data['Gmag'], data['e_Gmag']
+        col1, col2, col3 = data[col1_n], data[col2_n], data[col3_n]
         if read is False:
             print("Obtaining magnitudes/colors and their uncertainties")
-            mag, e_mag, col1, e_col1, col2, e_col2 = uncertMags(
-                data, col1_n, col2_n)
+            e_col1, e_col2, e_col3 = uncertMags(
+                DR, data, col1_n, col2_n, col3_n)
 
             print("Write output file in input/ folder")
             writeOut.main(
-                clust['name'], data, mag, e_mag, col1, e_col1, col2, e_col2,
-                col1_n, col2_n)
+                clust['name'], data, e_col1, e_col2, e_col3, col1_n, col2_n,
+                col3_n)
         else:
-            mag, e_mag, col1, e_col1, col2, e_col2 = data['Gmag'],\
-                data['e_Gmag'], data[col1_n], data['e_' + col1_n],\
-                data[col2_n], data['e_' + col2_n]
+            e_col1, e_col2 = data['e_' + col1_n], data['e_' + col2_n]
 
         print("Plotting")
         makePlot.main(
-            clust['name'], center, clust['clust_rad'],
-            clust['e_mmax'], clust['e_c1max'], clust['e_c2max'],
-            clust['plx_min'], clust['plx_max'],
-            data['RA_ICRS'], data['DE_ICRS'],
-            mag, e_mag, col1, e_col1, col2, e_col2,
+            center, box_s, Gmax, babusiaux_filters,
+            rv_col, clust['name'], data['RA_ICRS'],
+            data['DE_ICRS'], mag, e_mag, col1, e_col1, col2, e_col2, col3,
             data['Plx'], data['pmRA'], data['e_pmRA'], data['pmDE'],
-            data['e_pmDE'], data['RV'], col1_n, col2_n,
-            babusiaux_filters, clust['box_s'])
+            data['e_pmDE'], data[rv_col], col1_n, col2_n, col3_n)
 
     print("\nEnd")
 
@@ -103,21 +107,45 @@ def babusiaux_filt(data):
     return data[mask]
 
 
-def uncertMags(data, col1_n, col2_n):
+def uncertMags(DR, data, col1_n, col2_n, col3_n):
     """
-    Gaia DR2 zero points:
+    # Gaia DR2 zero points:
 
     https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/
     chap_cu5pho/sec_cu5pho_calibr/ssec_cu5pho_calibr_extern.html#Ch5.T2
 
+    The G magnitude error:
+        unp.std_devs(mag_d['G'])
+    is equivalent to:
+        np.sqrt((1.0857*(data['e_FG']/data['FG']))**2 + .0018**2)
+    as defined in Eq 5.26 of the link above.
+
+    These values are larger than the 'e_Gmag' column given by Vizier by up to
+    ~0.002 for the brightest stars, and go to zero for the faintest. I don't
+    really know why. I asked Vizier and their answer was:
+
+    > The e_Gmag uncertainties in VizieR were added by the CDS and,
+    > apparently, do not take into account the Vegamag corrections; we will
+    > continue the investigation.
+    >
+    > In the meantime, ignoring the e_Gmag in VizieR and using the formula
+    > given by Gaia DR2 seems to be the right solution."
+
+    # Gaia EDR3 zero points:
+
+    https://www.cosmos.esa.int/web/gaia/edr3-passbands
+
     """
-
     # Zero points for the G,BP,RP magnitudes.
-    Zp_G = ufloat(25.6884, 0.0018)
-    Zp_BP, Zp_RP = ufloat(25.3514, 0.0014), ufloat(24.7619, 0.0019)
-
-    # Factor that converts the instrumental flux to calibrated flux.
-    c_G, c_BP, c_RP = 10**(Zp_G / -2.5), 10**(Zp_BP / -2.5), 10**(Zp_RP / -2.5)
+    if DR == '2':
+        # Updated October 2017
+        Zp_G = ufloat(25.6914396869, 0.0011309370)
+        Zp_BP = ufloat(25.3488107670, 0.0004899854)
+        Zp_RP = ufloat(24.7626744847, 0.0035071711)
+    elif DR == '3':
+        Zp_G = ufloat(25.6873668671, 0.0027553202)
+        Zp_BP = ufloat(25.3385422158, 0.0027901700)
+        Zp_RP = ufloat(24.7478955012, 0.0037793818)
 
     # Fluxes
     I_G = unp.uarray(data['FG'], data['e_FG'])
@@ -126,18 +154,30 @@ def uncertMags(data, col1_n, col2_n):
 
     # Magnitudes
     mag_d = {
-        'G': -2.5 * unp.log10(c_G * I_G), 'BP': -2.5 * unp.log10(c_BP * I_BP),
-        'RP': -2.5 * unp.log10(c_RP * I_RP)}
+        'G': Zp_G + -2.5 * unp.log10(I_G),
+        'BP': Zp_BP + -2.5 * unp.log10(I_BP),
+        'RP': Zp_RP + -2.5 * unp.log10(I_RP)}
+
+    # import matplotlib.pyplot as plt
+    # Gmag_new = unp.nominal_values(mag_d['RP'])
+    # plt.scatter(data['Gmag'], data['RPmag'] - Gmag_new, alpha=.5)
+    # plt.ylabel("Gmag_CDS - Gmag_here")
+    # plt.xlabel("Gmag_CDS")
+    # plt.show()
 
     col11, col12 = col1_n.split('-')
     col21, col22 = col2_n.split('-')
+    col31, col32 = col3_n.split('-')
     # Colors
     col1 = mag_d[col11] - mag_d[col12]
     col2 = mag_d[col21] - mag_d[col22]
+    col3 = mag_d[col31] - mag_d[col32]
 
-    return unp.nominal_values(mag_d['G']), unp.std_devs(mag_d['G']),\
-        unp.nominal_values(col1), unp.std_devs(col1),\
-        unp.nominal_values(col2), unp.std_devs(col2),
+    # Uncertainties
+    e_col1, e_col2, e_col3 = unp.std_devs(col1), unp.std_devs(col2),\
+        unp.std_devs(col3)
+
+    return e_col1, e_col2, e_col3
 
 
 def readInput():
@@ -154,14 +194,12 @@ def readInput():
             else:
                 data = ascii.read(f.read())
 
-    params = (ast.literal_eval(params[0]), params[1], params[2],
-              ast.literal_eval(params[3]))
+    read, DR, Gmax, babusiaux_filters = ast.literal_eval(params[0]),\
+        params[1], params[2], ast.literal_eval(params[3])
 
-    clusters = Table(data, names=(
-        'name', 'cent_ra', 'cent_dec', 'box_s', 'clust_rad', 'e_mmax',
-        'e_c1max', 'e_c2max', 'plx_min', 'plx_max'))
+    clusters = Table(data, names=('name', 'cent_ra', 'cent_dec', 'box_s'))
 
-    return params, clusters
+    return read, DR, Gmax, babusiaux_filters, clusters
 
 
 if __name__ == '__main__':

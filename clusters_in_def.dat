@@ -5,16 +5,17 @@
 #   If True, read (instead of downloading) a properly formatted
 #   data file from an 'input/' sub-folder.
 #
-# col1, col2 : strings
-#   Names of the colors to create, combining the G, BP, RP filters
+# Data Release: 2 / 3
+#   Data release to use
+#
+# Gmax: float
+#   Maximum G magnitude to request
 #
 # babusiaux_filters : True / False
-#   Apply (or not) Babusiaux et al. (2018A&A...616A..10G) filters
-#   to the queried data.
+#   Apply (or not) Babusiaux filters to the queried data.
 #
-# read     col1      col2     babusiaux_filters
-False     BP-RP      BP-G                 False
-
+# read    DR      Gmax   babusiaux_filters
+False      3        30               False
 
 
 # One cluster per line, for all the clusters that are queried.
@@ -30,18 +31,8 @@ False     BP-RP      BP-G                 False
 #   Length of the square box around the queried center. Must be in a format
 #   supported by astropy's 'Angle' class[1].
 #
-# cl_rad : float
-#   Approximate radius of the queried cluster. Only affects the plot, not
-#   the queried data.
-#
-# e_mmax ec1max ec2max plx_min plx_max : floats
-#   Maximum uncertanties values for the G magnitude and the two defined
-#   colors, and minimum & maximum values for the parallax. Only affects
-#   the plot, not the queried data.
-# 
-#
-# name   cent_ra  cent_dec  box_s cl_rad e_mmax ec1max ec2max plx_min plx_max
-NGC659      26.1    60.673  .5deg     .1     .2     .2     2.      0.      5.
+# name   cent_ra   cent_dec   box_s
+NGC659      26.1     60.667   .5deg
 
 
 
