@@ -1,5 +1,7 @@
 # GaiaQuery
 
+**No longer maintained. I am now using the simpler script stored here:** https://github.com/Gabriel-p/VizierQuery
+
 Simple script to query Gaia DR2 or EDR3 data using the
 [`astroquery`](https://astroquery.readthedocs.io) package. Generates two user-defined colors (not present in the raw Gaia data) with their associated uncertainties.
 
